@@ -1,0 +1,139 @@
+---
+description: Vue Component Standards
+globs: *.vue
+---
+# Vue Component Standards
+
+Standards for Vue component file structure and implementation.
+
+<rule>
+name: vue_component_standards
+description: Enforce best practices for Vue component files
+filters:
+  # Match any .vue files
+  - type: file_extension
+    pattern: "\\.vue$"
+  # Match file creation or modification events
+  - type: event
+    pattern: "file_create|file_modify"
+
+actions:
+  - type: reject
+    conditions:
+      # Reject if using Options API instead of Composition API with <script setup>
+      - pattern: "<script\\s+lang=\"ts\"(?!\\s+setup)"
+        message: "Use <script setup lang=\"ts\"> for TypeScript Composition API"
+      
+      # Reject if using non-TypeScript script tags
+      - pattern: "<script(?!\\s+lang=\"ts\")"
+        message: "Use TypeScript for all Vue components with <script lang=\"ts\"> or <script setup lang=\"ts\">"
+      
+      # Reject if template appears before script
+      - pattern: "^\\s*<template>[\\s\\S]*?<script"
+        message: "Script block should appear before template block"
+        
+      # Reject if using reactive instead of ref
+      - pattern: "import\\s+\\{[^\\}]*reactive[^\\}]*\\}\\s+from\\s+['\"]vue['\"]|const\\s+\\w+\\s*=\\s*reactive\\("
+        message: "Always use ref() instead of reactive() for reactivity"
+
+  - type: suggest
+    message: |
+      For Vue components:
+
+      1. Always use Script Setup with TypeScript:
+         ```vue
+         <script setup lang="ts">
+         // Your component logic
+         </script>
+         ```
+
+      2. Script block should come before template:
+         ```vue
+         <script setup lang="ts">
+         // Component logic
+         </script>
+
+         <template>
+         <!-- Template content -->
+         </template>
+         ```
+
+      3. Use TypeScript Composition API
+
+      4. Always use ref() instead of reactive() for reactivity:
+         ```vue
+         // ✅ Good: Using ref
+         const user = ref({ name: 'John', age: 30 })
+         
+         // ❌ Bad: Using reactive
+         const user = reactive({ name: 'John', age: 30 })
+         ```
+
+      5. Proper component structure:
+         ```vue
+         <script setup lang="ts">
+         // Imports
+         import { ref, computed } from 'vue'
+         
+         // Props, emits
+         const props = defineProps<{
+           // prop definitions
+         }>()
+         
+         // Component logic
+         
+         // Exposed variables and methods
+         </script>
+         
+         <template>
+           <!-- Template content -->
+         </template>
+         
+         <style scoped>
+         /* Component styles */
+         </style>
+         ```
+
+examples:
+  - input: |
+      # Bad: Template before script
+      <template>
+        <div>Content</div>
+      </template>
+      
+      <script lang="ts">
+      export default {
+        // Options API
+      }
+      </script>
+
+      # Bad: Non-TypeScript script
+      <script>
+      export default {
+      }
+      </script>
+      
+      # Bad: Using reactive instead of ref
+      <script setup lang="ts">
+      import { reactive } from 'vue'
+      
+      const user = reactive({ name: 'John', age: 30 })
+      </script>
+
+      # Good: Script setup with TypeScript before template and using ref
+      <script setup lang="ts">
+      import { ref } from 'vue'
+      
+      const count = ref(0)
+      const user = ref({ name: 'John', age: 30 })
+      </script>
+      
+      <template>
+        <div>{{ count }}</div>
+      </template>
+    output: "Correctly structured Vue component"
+
+metadata:
+  priority: high
+  version: 1.0
+</rule> 
